@@ -1,0 +1,30 @@
+# Server Configuration Settings
+system:
+  username: ""  # Red Hat subscription username
+  password: ""  # Red Hat subscription password
+
+network:
+  interface: "ens224"
+  hostname: "server-node"
+  domain: "example25.lab"
+  server_ip: "172.16.30.25"
+  client_ip: "172.16.31.25"
+  alias_ip: "172.16.32.25"
+
+ssh:
+  port: 22
+  user: "admin"
+  key_path: "/home/admin/.ssh/id_rsa"
+  red_interface: "ens224"
+
+firewall:
+  client_subnet: "172.16.31.0/24"
+  server_subnet: "172.16.30.0/24"
+  allowed_ports:
+    - 22  # SSH
+    - 53  # DNS
+
+dns:
+  port: 53
+  zone_dir: "/var/named"
+  config_file: "/etc/named.conf"
