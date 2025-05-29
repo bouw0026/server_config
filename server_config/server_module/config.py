@@ -2,31 +2,41 @@
 """
 Server Configuration Constants and Defaults
 
-Centralized configuration for all server modules with:
-- Environment detection
-- Default values
-- Network constants
+Centralized configuration management with YAML support
 """
 
 import os
 import socket
+import yaml
 from dataclasses import dataclass
 from typing import List, Dict
+
+def load_config() -> Dict:
+    """Load configuration from YAML file"""
+    config_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'config.yaml')
+    try:
+        with open(config_file, 'r') as f:
+            return yaml.safe_load(f)
+    except (FileNotFoundError, yaml.YAMLError):
+        return {}
+
+# Load configuration
+CONFIG = load_config()
 
 @dataclass
 class NetworkConfig:
     """Network-related configuration"""
-    interface: str = "ens224"
-    server_ip: str = "172.16.30.25"
-    client_ip: str = "172.16.31.25"
-    alias_ip: str = "172.16.32.25"
-    domain: str = "example25.lab"
-    hostname: str = "server-node"
-    fqdn: str = "server-node.example25.lab"
-    dns_port: int = 53
-    ssh_port: int = 22
-    client_subnet: str = "172.16.31.0/24"
-    server_subnet: str = "172.16.30.0/24"
+    interface: str = CONFIG.get('network', {}).get('interface', 'ens224')
+    server_ip: str = CONFIG.get('network', {}).get('server_ip', '172.16.30.25')
+    client_ip: str = CONFIG.get('network', {}).get('client_ip', '172.16.31.25')
+    alias_ip: str = CONFIG.get('network', {}).get('alias_ip', '172.16.32.25')
+    domain: str = CONFIG.get('network', {}).get('domain', 'example25.lab')
+    hostname: str = CONFIG.get('network', {}).get('hostname', 'server-node')
+    fqdn: str = f"{hostname}.{domain}"
+    dns_port: int = CONFIG.get('dns', {}).get('port', 53)
+    ssh_port: int = CONFIG.get('ssh', {}).get('port', 22)
+    client_subnet: str = CONFIG.get('firewall', {}).get('client_subnet', '172.16.31.0/24')
+    server_subnet: str = CONFIG.get('firewall', {}).get('server_subnet', '172.16.30.0/24')
     allowed_networks: List[str] = None
     
     def __post_init__(self):
@@ -36,19 +46,19 @@ class NetworkConfig:
 @dataclass
 class SSHConfig:
     """SSH-specific configuration"""
-    user: str = "admin"
-    key_path: str = "/home/admin/.ssh/id_rsa"
-    red_interface: str = "ens224"
-    alias_ip: str = "172.16.32.25"
-    client_ip: str = "172.16.31.25"
-    port: int = 22
+    user: str = CONFIG.get('ssh', {}).get('user', 'admin')
+    key_path: str = CONFIG.get('ssh', {}).get('key_path', '/home/admin/.ssh/id_rsa')
+    red_interface: str = CONFIG.get('ssh', {}).get('red_interface', 'ens224')
+    alias_ip: str = CONFIG.get('network', {}).get('alias_ip', '172.16.32.25')
+    client_ip: str = CONFIG.get('network', {}).get('client_ip', '172.16.31.25')
+    port: int = CONFIG.get('ssh', {}).get('port', 22)
     backup_dir: str = "/etc/ssh/backups"
 
 @dataclass 
 class ServiceConfig:
     """Service management configuration"""
-    dns_zone_dir: str = "/var/named"
-    named_conf: str = "/etc/named.conf"
+    dns_zone_dir: str = CONFIG.get('dns', {}).get('zone_dir', '/var/named')
+    named_conf: str = CONFIG.get('dns', {}).get('config_file', '/etc/named.conf')
     sshd_config: str = "/etc/ssh/sshd_config"
     firewall_backup_dir: str = "/etc/iptables/backups"
 
@@ -76,13 +86,7 @@ def detect_environment() -> Dict:
 env_config = detect_environment()
 
 # Default configurations
-DEFAULT_NETWORK = NetworkConfig(
-    hostname=env_config["hostname"],
-    fqdn=env_config["fqdn"],
-    domain=env_config["domain"],
-    server_ip=env_config["server_ip"]
-)
-
+DEFAULT_NETWORK = NetworkConfig()
 DEFAULT_SSH = SSHConfig()
 DEFAULT_SERVICE = ServiceConfig()
 
@@ -92,20 +96,3 @@ ACTIVE_CONFIG = {
     "ssh": DEFAULT_SSH,
     "services": DEFAULT_SERVICE
 }
-
-def update_config(module: str, **kwargs):
-    """
-    Dynamically update configuration for a module
-    
-    Args:
-        module: One of 'network', 'ssh', or 'services'
-        kwargs: Configuration attributes to update
-    """
-    if module not in ACTIVE_CONFIG:
-        raise ValueError(f"Invalid module {module}. Must be one of {list(ACTIVE_CONFIG.keys())}")
-    
-    for key, value in kwargs.items():
-        if hasattr(ACTIVE_CONFIG[module], key):
-            setattr(ACTIVE_CONFIG[module], key, value)
-        else:
-            raise AttributeError(f"{module} config has no attribute {key}")
