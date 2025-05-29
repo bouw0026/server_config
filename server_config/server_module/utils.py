@@ -17,15 +17,28 @@ from typing import Tuple, Optional, List, Union
 from datetime import datetime
 import logging
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler('/var/log/server_config.log'),
-        logging.StreamHandler()
-    ]
-)
+# Configure logging with fallback to current directory
+try:
+    log_dir = '/var/log'
+    if not os.path.exists(log_dir) or not os.access(log_dir, os.W_OK):
+        log_dir = os.path.dirname(os.path.dirname(__file__))
+    log_file = os.path.join(log_dir, 'server_config.log')
+    
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(levelname)s - %(message)s',
+        handlers=[
+            logging.FileHandler(log_file),
+            logging.StreamHandler()
+        ]
+    )
+except Exception as e:
+    # Fallback to console-only logging
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(levelname)s - %(message)s'
+    )
+
 logger = logging.getLogger(__name__)
 
 class CommandError(Exception):
@@ -59,6 +72,11 @@ def run_cmd(
     Raises:
         CommandError: If check=True and command fails
     """
+    # Handle dry run mode for testing
+    if os.environ.get('SERVER_CONFIG_DRY_RUN'):
+        logger.info(f"[DRY RUN] Would execute: {command}")
+        return True, "dry-run"
+
     if sudo and os.geteuid() != 0:
         command = ["sudo"] + (command if isinstance(command, list) else command.split())
     elif isinstance(command, str):
@@ -75,21 +93,28 @@ def run_cmd(
             universal_newlines=True,
             timeout=timeout
         )
-        output = result.stdout.strip() if capture_output else ""
+        output = result.stdout.strip() if capture_output and result.stdout else ""
         return True, output
     
     except subprocess.CalledProcessError as e:
         error_msg = f"Command failed with exit code {e.returncode}"
         if check:
-            raise CommandError(' '.join(command), error_msg, e.stderr.strip())
+            raise CommandError(' '.join(command), error_msg, e.stderr.strip() if e.stderr else None)
         logger.warning(f"{error_msg}: {' '.join(command)}")
-        return False, e.stderr.strip()
+        return False, e.stderr.strip() if e.stderr else error_msg
     
     except subprocess.TimeoutExpired:
         error_msg = f"Command timed out after {timeout} seconds"
         if check:
             raise CommandError(' '.join(command), error_msg)
         logger.warning(f"{error_msg}: {' '.join(command)}")
+        return False, error_msg
+    
+    except Exception as e:
+        error_msg = f"Unexpected error: {str(e)}"
+        if check:
+            raise CommandError(' '.join(command), error_msg)
+        logger.error(f"{error_msg}: {' '.join(command)}")
         return False, error_msg
 
 def backup_file(file_path: str, backup_dir: str = None) -> Tuple[bool, Optional[str]]:
@@ -126,11 +151,21 @@ def backup_file(file_path: str, backup_dir: str = None) -> Tuple[bool, Optional[
         return False, None
 
 def check_root() -> bool:
-    """Verify script is running as root"""
-    if os.geteuid() != 0:
+    """Verify script is running as root or can use sudo"""
+    if os.geteuid() == 0:
+        return True
+        
+    # Check sudo access
+    try:
+        result = subprocess.run(
+            ["sudo", "-n", "true"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+        return result.returncode == 0
+    except:
         logger.critical("This operation requires root privileges")
         return False
-    return True
 
 def validate_ip(ip: str) -> bool:
     """Validate an IP address"""
@@ -181,5 +216,5 @@ def restart_service(service_name: str) -> bool:
 
 def is_service_active(service_name: str) -> bool:
     """Check if a service is active"""
-    success, output = run_cmd(f"systemctl is-active {service_name}", sudo=True)
+    success, output = run_cmd(f"systemctl is-active {service_name}", sudo=True, check=False)
     return success and output == "active"
