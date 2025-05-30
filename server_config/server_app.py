@@ -6,15 +6,14 @@ A unified interface for all server configuration tasks.
 """
 
 import argparse
-from server_module import (
+from server_config.server_module import (
     dns,
     ssh,
     firewall,
     network,
-    system,
-    config,
-    utils
+    system
 )
+from server_config.server_module.utils import run_cmd
 
 def configure_all(args):
     """Run all configuration steps"""
