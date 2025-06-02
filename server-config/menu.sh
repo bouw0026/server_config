@@ -54,6 +54,8 @@ show_menu() {
     echo "7. View Logs"
     echo "8. System Status"
     echo "9. Exit"
+    echo "10. Test All Configurations"
+    echo "11. Create and Deploy Client Configurations"
     echo "=========================="
 }
 
