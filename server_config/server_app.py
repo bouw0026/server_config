@@ -1,4 +1,3 @@
-# ~/server_config/server_app.py
 #!/usr/bin/env python3
 """
 Server Configuration Application
@@ -7,15 +6,8 @@ A unified interface for all server configuration tasks.
 """
 
 import argparse
-# --- IMPORTANT CHANGE HERE ---
-from server_config.server_module import ( # Now importing from the installed package
-    dns,
-    ssh,
-    firewall,
-    network,
-    system
-)
-from server_config.server_module.utils import run_cmd
+from .server_module import dns, ssh, firewall, network, system
+from .server_module.utils import run_cmd
 
 def configure_all(args):
     """Run all configuration steps"""
@@ -45,8 +37,8 @@ def configure_all(args):
     print("\n[4/5] Configuring SSH server...")
     ssh.configure_ssh(
         port=args.port or 22,
-        red_ip=net_config['red_ip'],
-        alias_ip=net_config['alias_ip']
+        red_ip=net_config.get('red_ip'),
+        alias_ip=net_config.get('alias_ip')
     )
     ssh.setup_key_auth()
     
@@ -54,7 +46,7 @@ def configure_all(args):
     print("\n[5/5] Configuring DNS server...")
     dns.configure_dns(
         domain=args.domain or "example25.lab",
-        server_ip=net_config['server_ip']
+        server_ip=net_config.get('server_ip')
     )
     
     print("\n=== Server Configuration Complete ===")
