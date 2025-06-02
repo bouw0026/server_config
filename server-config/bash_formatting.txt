@@ -1,0 +1,39 @@
+#!/bin/bash
+
+mkdir -p /etc/server-config
+cd /etc/server-config
+git clone <repository-url> .
+Set up the required directory structure:
+
+mkdir -p /etc/server-config/backups
+mkdir -p /var/log
+touch /var/log/server-config.log
+chmod 755 *.sh
+
+#Create the main configuration directory:
+
+mkdir -p /etc/server-config
+chown -R root:root /etc/server-config
+chmod 750 /etc/server-config
+
+#The final directory structure will look like this:
+
+/etc/server-config/
+├── backups/
+├── config.sh
+├── dns.sh
+├── firewall.sh
+├── main.sh
+├── menu.sh
+├── network.sh
+└── ssh.sh
+
+/var/log/
+└── server-config.log
+
+You can then start the configuration menu by running:
+
+
+cd /etc/server-config
+./menu.sh
+This will launch the interactive menu with tmux split terminals for monitoring system status and logs.

@@ -1,0 +1,20 @@
+#!/bin/bash
+
+mkdir -p /etc/server-config
+cd /etc/server-config
+git clone <repository-url> .
+Set up the required directory structure:
+
+mkdir -p /etc/server-config/backups
+mkdir -p /var/log
+touch /var/log/server-config.log
+chmod 755 *.sh
+
+#Create the main configuration directory:
+
+mkdir -p /etc/server-config
+chown -R root:root /etc/server-config
+chmod 750 /etc/server-config
+
+cd /etc/server-config
+./menu.sh
