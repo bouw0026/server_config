@@ -1,24 +1,36 @@
 #!/bin/bash
 
-mkdir -p /etc/server-config
-cd /etc/server-config
-git clone https://github.com/bouw0026/server_config/tree/main/server-config .
-Set up the required directory structure:
+# Set repository URL
+REPO_URL="https://github.com/bouw0026/server_config.git"
+CONFIG_DIR="/etc/server-config"
 
-mkdir -p /etc/server-config/backups
+# Create configuration directory
+mkdir -p "$CONFIG_DIR"
+chown -R root:root "$CONFIG_DIR"
+chmod 750 "$CONFIG_DIR"
+
+# Clone repository (sparse checkout for just server-config directory)
+cd "$CONFIG_DIR" || exit 1
+git init
+git remote add origin "$REPO_URL"
+git config core.sparseCheckout true
+echo "server-config/*" >> .git/info/sparse-checkout
+git pull origin main
+
+# Set up required directory structure
+mkdir -p "$CONFIG_DIR/backups"
 mkdir -p /var/log
 touch /var/log/server-config.log
-chmod 755 *.sh
+chmod 644 /var/log/server-config.log
 
-#Create the main configuration directory:
+# Set proper permissions for scripts
+chmod 750 "$CONFIG_DIR"/*.sh
 
-mkdir -p /etc/server-config
-chown -R root:root /etc/server-config
-chmod 750 /etc/server-config
-
-#Create a client template directory
-
-mkdir -p /etc/server-config/slient-templates
-
-cd /etc/server-config
-./menu.sh
+# Verify and start the menu
+if [[ -f "$CONFIG_DIR/menu.sh" ]]; then
+    cd "$CONFIG_DIR" || exit 1
+    ./menu.sh
+else
+    echo "Error: menu.sh not found in $CONFIG_DIR"
+    exit 1
+fi
