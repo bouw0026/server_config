@@ -98,6 +98,13 @@ menu_loop() {
                 echo "Exiting..."
                 exit 0
                 ;;
+            10) 
+                test_all
+                read -p "Press [Enter] to continue..."
+                ;;
+            11)
+                create_multiple_clients
+                ;;
             *)
                 echo "Invalid option"
                 sleep 2
