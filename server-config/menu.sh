@@ -5,6 +5,7 @@ source "$(dirname "$0")/network.sh"
 source "$(dirname "$0")/ssh.sh"
 source "$(dirname "$0")/firewall.sh"
 source "$(dirname "$0")/dns.sh"
+source "$(dirname "$0")/test_configs.sh"  # Added this line
 
 # Terminal layout configurations
 configure_terminals() {
@@ -53,9 +54,8 @@ show_menu() {
     echo "6. DNS Configuration"
     echo "7. View Logs"
     echo "8. System Status"
-    echo "9. Exit"
-    echo "10. Test All Configurations"
-    echo "11. Create and Deploy Client Configurations"
+    echo "9. Test All Configurations"  # Changed from Exit to Tests
+    echo "10. Exit"  # Added Exit as option 10
     echo "=========================="
 }
 
@@ -63,7 +63,7 @@ show_menu() {
 menu_loop() {
     while true; do
         show_menu
-        read -p "Enter your choice [1-9]: " choice
+        read -p "Enter your choice [1-10]: " choice
         
         case $choice in
             1)
@@ -95,15 +95,12 @@ menu_loop() {
                 watch -n 1 'systemctl status sshd named'
                 ;;
             9)
-                echo "Exiting..."
-                exit 0
-                ;;
-            10) 
-                test_all
+                test_all  # This will run all tests
                 read -p "Press [Enter] to continue..."
                 ;;
-            11)
-                create_multiple_clients
+            10)
+                echo "Exiting..."
+                exit 0
                 ;;
             *)
                 echo "Invalid option"
