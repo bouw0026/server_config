@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Configuration variables
-CONFIG_FILE="/etc/server-config/config.yaml"
+CONFIG_FILE="/etc/server-config/config.sh"
 BACKUP_DIR="/etc/server-config/backups"
 LOG_FILE="/var/log/server-config.log"
 
@@ -11,12 +11,12 @@ DEFAULT_SERVER_IP="172.16.30.25"
 DEFAULT_CLIENT_IP="172.16.31.25"
 DEFAULT_ALIAS_IP="172.16.32.25"
 DEFAULT_DOMAIN="example25.lab"
-DEFAULT_HOSTNAME="srv1"
-DEFAULT_FQDN="srv1.example25.lab"
+DEFAULT_HOSTNAME="bouw0026-srv"
+DEFAULT_FQDN="bouw0026-srv.example25.lab"
 
 # SSH defaults for lab environment
 DEFAULT_SSH_PORT=2222
-DEFAULT_SSH_USER="admin"
+DEFAULT_SSH_USER="cst8246"
 DEFAULT_SSH_KEY_PATH="/home/admin/.ssh/id_rsa"
 
 # RHEL specific checks
