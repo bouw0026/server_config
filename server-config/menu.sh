@@ -5,7 +5,7 @@ source "$(dirname "$0")/network.sh"
 source "$(dirname "$0")/ssh.sh"
 source "$(dirname "$0")/firewall.sh"
 source "$(dirname "$0")/dns.sh"
-source "$(dirname "$0")/test_configs.sh"  # Added this line
+source "$(dirname "$0")/test_configs.sh"
 
 # Terminal layout configurations
 configure_terminals() {
@@ -54,8 +54,8 @@ show_menu() {
     echo "6. DNS Configuration"
     echo "7. View Logs"
     echo "8. System Status"
-    echo "9. Test All Configurations"  # Changed from Exit to Tests
-    echo "10. Exit"  # Added Exit as option 10
+    echo "9. Test All Configurations"
+    echo "10. Exit" 
     echo "=========================="
 }
 
@@ -95,7 +95,7 @@ menu_loop() {
                 watch -n 1 'systemctl status sshd named'
                 ;;
             9)
-                test_all  # This will run all tests
+                test_all
                 read -p "Press [Enter] to continue..."
                 ;;
             10)
