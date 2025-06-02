@@ -2,7 +2,7 @@
 
 mkdir -p /etc/server-config
 cd /etc/server-config
-git clone <repository-url> .
+git clone https://github.com/bouw0026/server_config/tree/main/server-config .
 Set up the required directory structure:
 
 mkdir -p /etc/server-config/backups
