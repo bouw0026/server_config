@@ -16,5 +16,9 @@ mkdir -p /etc/server-config
 chown -R root:root /etc/server-config
 chmod 750 /etc/server-config
 
+#Create a client template directory
+
+mkdir -p /etc/server-config/slient-templates
+
 cd /etc/server-config
 ./menu.sh
